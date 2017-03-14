@@ -1,0 +1,30 @@
+.main-title {
+  font-family : 'Open Sans';
+  font-size   : 24px;
+  margin      : 5px;
+}
+#count-container {
+  position        : relative;
+  display         : flex;
+  align-items     : center;
+  justify-content : left;
+  flex-direction  : row;
+  margin-left     : 5px;
+}
+.basic-label {
+  margin-right : 5px;
+}
+#status-container {
+  position        : relative;
+  display         : flex;
+  align-items     : center;
+  justify-content : left;
+  flex-direction  : row;
+  margin-left     : 5px;
+}
+#status {
+  margin-right : 5px;
+}
+#error-container {
+  padding-left : 5px;
+}

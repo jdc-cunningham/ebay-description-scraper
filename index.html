@@ -1,0 +1,102 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Jacob David C. Cunningham">
+    <meta name="description" content="Scrapes eBay listing descriptions">
+    <link rel="icon" href="" type="image/x-icon">
+    <link rel="shortcut icon" href="" type="image/x-icon" width="16" height="16">
+    <title>eBay listing descriptions scraper</title>
+    <link rel="stylesheet" type="text/css" href="css/css-reset.css">
+    <link rel="stylesheet" type="text/css" href="css/index.css">
+    <script src="js/jquery-latest.js"></script>
+  </head>
+  <body>
+    <h1 class="main-title">eBay descriptions scraper</h1>
+    <div id="count-container">
+      <p>Searching for new entries...</p><img src="css/images/ajax-loader.gif" width="16px" heigh="16px">
+    </div>
+    <div id="status-container"></div>
+    <div id="error-container"></div>
+    <script>
+      // get number of new descriptions to scrape
+      $.get("php/get-new-entries-count.php", function(data) {
+        // console.debug(data);
+        // parse json
+        var result = JSON.parse(data);
+        // console.debug(result);
+        if (result['status'] === 'success') {
+          setTimeout(function() {
+            $("#count-container").empty();
+            var newCntMsg = '<p class="basic-label">New entries found: ' +
+              result['count']+
+            '</p>';
+            $("#count-container").append(newCntMsg);
+            setTimeout(function() {
+              var startingScrapeMsg = '<p id="status">Scraping: 1/'+result['count']+'</p><img src="css/images/ajax-loader.gif" width="16px" heigh="16px">';
+              $("#status-container").append(startingScrapeMsg);
+              // start scrape
+              var entries = Object.keys(result['entries']).length,
+                  refObj  = {},
+                  counter = 0;
+              // build reference object
+              for (var sid in result['entries']) {
+                refObj[counter] = sid;
+                counter++;
+              }
+              // console.debug(refObj);
+              var curID   = 0,
+                  failedScrape = {};
+              function scrapeListing(curID) {
+                var curSid       = refObj[curID],
+                    curListing   = result['entries'][curSid];
+                // console.log(curSid + ' vs ' + curListing);
+                $.post("php/scrape.php", {
+                  'sid'      : curSid,
+                  'targ_url' : curListing
+                }).done(function(data) {
+                  // parse results
+                  var result = JSON.parse(data);
+                  if (result['status'] === 'fail') {
+                    // see why it failed
+                    failedScrape[curSid] = result['reason'];
+                    curID++;
+                  }
+                  else {
+                    // update status and run next set
+                    curID++;
+                    $("#status").text('Scraping: '+curID+'/'+entries);
+                  }
+                  if (curID < entries) {
+                    scrapeListing(curID);
+                  }
+                  else {
+                    // stop scrape and show problematic links if any
+                    $("#status-container").empty();
+                    var errLinksLen = Object.keys(failedScrape).length;
+                    if (errLinksLen > 0) {
+                      if (errLinksLen > 1) {
+                        $("#error-container").append('<p>There were ' + errLinksLen + 'errors found:</p>');
+                      }
+                      else {
+                        $("#error-container").append('<p>One error was found:</p>');
+                      }
+                      for (var error in failedScrape) {
+                        $("#error-container").append('<p>sid: '+error + ' reason: ' + failedScrape[error] +'</p>');
+                      }
+                    }
+                    else {
+                      $("#status-container").append('<p>Scraping finished! No errors found.</p>');
+                    } 
+                  }
+                });
+              }
+              scrapeListing(curID);
+            }, 500);
+          }, 1000);
+        }
+      });
+    </script>
+  </body>
+</html>
