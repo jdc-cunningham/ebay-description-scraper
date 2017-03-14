@@ -1,6 +1,8 @@
 # ebay-description-scraper
 An automated scraper that updates descriptions from an ebay feed
 
+This is based on a LAMP stack (MySQL)
+
 This is a specific use-case. I had to create a way to update the missing descriptions from a listing on a website where the listing used ebay-feeds.
 
 A single part of an ebay-feed would be included in a specific listing inside an iFrame, however a description was needed on that listing page.
