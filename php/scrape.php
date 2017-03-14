@@ -77,7 +77,6 @@
       }
       else {
          $stmt = $dbh->prepare("UPDATE db_table SET Description=:new_description WHERE sid=:sid");
-          // $stmt = $dbh->prepare("UPDATE classifieds_listings SET Description=:new_description WHERE sid=:sid");
           
           $stmt->bindParam(':sid', $target_sid, PDO::PARAM_INT);
           // this line causes errors when errors are turned on 
